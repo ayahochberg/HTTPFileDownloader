@@ -37,25 +37,24 @@ public class HTTPRangeGetter implements Runnable {
                 long currentLocation = this.startBlock;
                 while (currentLocation < this.endBlock) {
                     int currentIndex = (int) currentLocation / Chunk.CHUNK_SIZE;
-                    // +/- 1 are for cases we do or do not want to include the last number in a range
                     int chunkSize = currentIndex != Manager.numberOfChunks-1 ?
                             Chunk.CHUNK_SIZE : (int) (this.endBlock - currentLocation + 1);
 
                     byte[] buffer = new byte[chunkSize];
                     inputStream.readNBytes(buffer, 0, chunkSize);
-                    //currentLocation += chunkSize;
+                    currentLocation += chunkSize;
 
                     if (!Manager.metadata[currentIndex]) {
                         Chunk currentChunk = new Chunk(buffer, currentLocation, chunkSize);
                         Manager.blocksQueue.put(currentChunk);
-                      //  currentLocation += chunkSize;
-                       // inputStream.skip(chunkSize);
-                        //continue;
+                        currentLocation += chunkSize;
+                        inputStream.skip(chunkSize);
+                        continue;
                     }
                     currentLocation += chunkSize;
-                    //Chunk currentChunk = new Chunk(buffer, currentLocation, chunkSize);
-                    //Manager.blocksQueue.put(currentChunk);
-                   // currentLocation += chunkSize;
+                    Chunk currentChunk = new Chunk(buffer, currentLocation, chunkSize);
+                    Manager.blocksQueue.put(currentChunk);
+                    currentLocation += chunkSize;
                 }
                 inputStream.close();
                 connection.disconnect();
